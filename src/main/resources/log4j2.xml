@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/2002/xmlspec/dtd/2.10/xmlspec.dtd">
+<!-- status为是否记录log4j2本身的event信息，默认是OFF -->
+<configuration status="off" debug="off" monitorInterval="1800">
+    <!-- 
+    输出的log都是在ERROR level上的，log4j定义了8个级别的log（除去OFF和ALL，可以说分为6个级别）
+    优先级从高到低依次为：OFF、FATAL、ERROR、WARN、INFO、DEBUG、TRACE、 ALL。
+    如果将log level设置在某一个级别上，那么比此级别优先级高的log都能打印出来。
+    例如，如果设置优先级为WARN，那么OFF、FATAL、ERROR、WARN 4个级别的log能正常输出，而INFO、DEBUG、TRACE、 ALL级别的log则会被忽略。
+  log4j默认的优先级为ERROR。
+   -->
+    <!-- 配置log文件存放路径 -->
+	<Properties>
+		<!-- 日志目录 -->
+		<Property name="log_path">d://logs</Property>
+		<!-- 文件日志输出格式 -->
+		<property name="log_file">%d{yyyy-MM-dd HH:mm:ss z} %-5level %class{36} %L %M - %msg%xEx%n</property>
+		<!-- 控制台日志输出格式 -->
+		<property name="log_console">%d{HH:mm:ss.SSS z} %-5level %class{36}.%M()/%L  - %msg%xEx%n</property>
+		<!-- 日志单个文件最大大小(压缩前) -->
+		<property name="every_file_size">1M</property>
+	</Properties>
+	<!--
+	过滤器，执行一个过滤器会有返回个枚举值，即DENY，NEUTRAL，ACCEPT其中之一。
+	返回DENY，日志将立即被抛弃不再经过其他过滤器；
+	返回NEUTRAL，有序列表里的下个过滤器过接着处理日志；
+	返回ACCEPT，日志会被立即处理，不再经过剩余过滤器。
+	过滤器被添加到<Appender> 中
+	为<Appender> 添加一个或多个过滤器后，可以用任意条件对日志进行过滤。
+	<Appender> 有多个过滤器时，按照配置顺序执行。
+	
+	LevelFilter： 级别过滤器，根据日志级别进行过滤。
+	如果日志级别等于配置级别，过滤器会根据onMath 和 onMismatch接收或拒绝日志。
+	有以下子节点：
+	<level>:设置过滤级别
+	<onMatch>:用于配置符合过滤条件的操作
+	<onMismatch>:用于配置不符合过滤条件的操作
+	
+	ThresholdFilter： 临界值过滤器，过滤掉低于指定临界值的日志。
+	当日志级别等于或高于临界值时，过滤器返回NEUTRAL；
+	当日志级别低于临界值时，日志会被拒绝。
+	
+	级别：ALL<TRACE<DEBUG<INFO<WARN<ERROR<FATAL<OFF
+	-->
+	<Appenders>
+		<!-- 控制台输出 -->
+		<Console name="Console" target="SYSTEM_OUT">
+		    <!--
+		          控制台只输出level及以上级别的信息（onMatch），其他的直接拒绝（onMismatch）
+		    -->
+			<ThresholdFilter level="all" onMatch="ACCEPT" onMismatch="DENY"/>
+			<PatternLayout pattern="${log_console}" />
+		</Console>
+		<!-- 全部日志文件 -->
+		<File name="app_all" fileName="${log_path}/all.log" append="false">
+			<Filters>
+				<ThresholdFilter level="all" onMatch="ACCEPT" onMismatch="DENY" />
+			</Filters>
+			<PatternLayout pattern="${log_file}" />
+		</File>
+		<!-- trace日志文件 -->
+		<File name="app_trace" fileName="${log_path}/trace.log" append="false">
+			<Filters>
+				<ThresholdFilter level="debug" onMatch="DENY" onMismatch="NEUTRAL" />
+				<ThresholdFilter level="trace" onMatch="ACCEPT" onMismatch="DENY" />
+			</Filters>
+			<PatternLayout pattern="${log_file}" />
+		</File>
+		<!-- debug日志文件 -->
+		<File name="app_debug" fileName="${log_path}/debug.log" append="false">
+			<Filters>
+				<ThresholdFilter level="info" onMatch="DENY" onMismatch="NEUTRAL" />
+				<ThresholdFilter level="debug" onMatch="ACCEPT" onMismatch="DENY" />
+			</Filters>
+			<PatternLayout pattern="${log_file}" />
+		</File>
+		<!-- info日志文件 -->
+		<File name="app_info" fileName="${log_path}/info.log" append="false">
+			<Filters>
+				<ThresholdFilter level="warn" onMatch="DENY" onMismatch="NEUTRAL" />
+				<ThresholdFilter level="info" onMatch="ACCEPT" onMismatch="DENY" />
+			</Filters>
+			<PatternLayout pattern="${log_file}" />
+		</File>
+		<!-- warn日志文件 -->
+		<File name="app_warn" fileName="${log_path}/warn.log" append="false">
+			<Filters>
+				<ThresholdFilter level="error" onMatch="DENY" onMismatch="NEUTRAL" />
+				<ThresholdFilter level="warn" onMatch="ACCEPT" onMismatch="DENY" />
+			</Filters>
+			<PatternLayout pattern="${log_file}" />
+		</File>
+		<!-- error日志文件 -->
+		<File name="app_error" fileName="${log_path}/error.log" append="false">
+			<Filters>
+				<ThresholdFilter level="fatal" onMatch="DENY" onMismatch="NEUTRAL" />
+				<ThresholdFilter level="error" onMatch="ACCEPT" onMismatch="DENY" />
+			</Filters>
+			<PatternLayout pattern="${log_file}" />
+		</File>
+		<!-- fatal日志文件 -->
+		<File name="app_fatal" fileName="${log_path}/fatal.log" append="false">
+			<Filters>
+				<ThresholdFilter level="fatal" onMatch="ACCEPT" onMismatch="DENY" />
+			</Filters>
+			<PatternLayout pattern="${log_file}" />
+		</File>
+		<RollingFile name="RollingFile" fileName="${log_path}/app.log" filePattern="${log_path}/app-%d{yyyy-MM-dd}-%i.log.gz">
+             <PatternLayout pattern="${log_file}"/>
+             <SizeBasedTriggeringPolicy size="${every_file_size}"/>
+             <Filters>
+                 <ThresholdFilter level="all" onMatch="ACCEPT" onMismatch="DENY"/>
+               </Filters>
+        </RollingFile>
+	</Appenders>
+	<!-- 
+	loggers标签，用于定义logger的lever和所采用的appender，其中appender-ref必须为先前定义的 appenders的名称
+	例如，此处为Console。那么log就会以appender所定义的输出格式来输出log。
+	root标签为log的默认输出形式，如果一个类的log没有在loggers中明确指定其输出lever与格式，那么就会采用root中定义的格式。
+	-->
+	<Loggers>
+	    <!--
+	          此时会在error级别上输出log，而其他类则会在trace级别上输出log
+	          需要注意的是 additivity选项，如果设置为true时可以执行到多个logger
+	    -->
+		<Logger name="com.anxpp.demo" level="all" additivity="false">
+			<appender-ref ref="Console" />
+			<appender-ref ref="app_all" />
+			<appender-ref ref="app_trace" />
+			<appender-ref ref="app_debug" />
+			<appender-ref ref="app_info" />
+			<appender-ref ref="app_warn" />
+			<appender-ref ref="app_error" />
+			<appender-ref ref="app_fatal" />
+			<appender-ref ref="RollingFile" />
+		</Logger>
+	</Loggers>
+</configuration>
