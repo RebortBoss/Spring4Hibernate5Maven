@@ -1,6 +1,6 @@
 # Spring4Hibernate5Maven
 
-Eclipse搭建Maven工程集成Spring4+Hibernate5
+Eclipse搭建Maven工程集成Spring4+Hibernate5+log4j2
 
     这里将以Eclipse搭建Maven工程集成Spring4生成的项目为基础，集成Hibernate5.0.7final。
 
