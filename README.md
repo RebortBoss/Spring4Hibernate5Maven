@@ -375,9 +375,8 @@ public interface DemoDao {
     void delete(Object entity);
     List<User> findAll();
 }
-111
+```
     DaoImpl(DemoDaoImpl.java)：
-
     (ps:这里用到了java8的新特性，若jdk版本低于1.8，请改为老版写法)
 ```java
 package com.anxpp.demo.core.dao.impl;
